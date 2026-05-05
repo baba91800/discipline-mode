@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Discipline Mode</title>
+<meta name="theme-color" content="#185FA5"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Discipline"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<style>
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --bg:#ffffff;--bg2:#F4F6F8;
+  --tx:#0F1117;--tx2:#6B7280;--tx3:#9CA3AF;
+  --bd:#F3F4F6;--bd2:#E5E7EB;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-m:#B5D4F4;
+  --green-l:#EAF3DE;--green-d:#3B6D11;--green-b:#C0DD97;
+  --amber-l:#FAEEDA;--amber-d:#854F0B;--amber-b:#FAC775;
+  --red-l:#FCEBEB;--red-d:#A32D2D;--red-b:#F7C1C1;
+  --purple-l:#EEEDFE;--purple-d:#3C3489;
+  --r:8px;--rl:14px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1C1C1E;--bg2:#2C2C2E;
+    --tx:#F2F2F7;--tx2:#AEAEB2;--tx3:#636366;
+    --bd:#3A3A3C;--bd2:#48484A;
+    --blue-l:#0C2E52;--blue-m:#185FA5;
+    --green-l:#1A3A0A;--green-d:#C0DD97;
+    --amber-l:#3D2200;--amber-d:#FAC775;
+    --red-l:#3D0F0F;--red-d:#F7C1C1;
+    --purple-l:#1A1640;--purple-d:#CECBF6;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg2);min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+.app{max-width:680px;margin:0 auto;padding:1.25rem 1rem}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.splash{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem;text-align:center;transition:opacity .5s,transform .5s}
+.splash.out{opacity:0;transform:scale(.98);pointer-events:none}
+.splash.hidden{display:none}
+.splash-logo{font-size:15px;font-weight:500;color:var(--tx);margin-bottom:2.5rem;display:flex;align-items:center;gap:8px}
+.splash-dot{width:7px;height:7px;border-radius:50%;background:var(--blue)}
+.splash-quote{font-size:18px;font-weight:500;color:var(--tx);line-height:1.6;max-width:340px;letter-spacing:-.01em}
+.splash-label{font-size:11px;color:var(--tx3);margin-top:1rem;text-transform:uppercase;letter-spacing:.06em}
+.splash-bar{width:40px;height:2px;background:var(--bd2);border-radius:2px;margin:2rem auto 0;overflow:hidden}
+.splash-prog{height:100%;width:0%;background:var(--blue);border-radius:2px;transition:width 2.5s linear}
+
+.ripple-container{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+.ripple{position:absolute;border-radius:50%;background:rgba(24,95,165,.12);transform:scale(0);animation:ripple-out .6s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes ripple-out{to{transform:scale(5);opacity:0}}
+.flash{position:fixed;inset:0;background:rgba(24,95,165,.06);pointer-events:none;z-index:89;animation:flash-out .35s ease forwards}
+@keyframes flash-out{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+
+.header{display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.4rem;background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);margin-bottom:1rem}
+.logo{font-size:16px;font-weight:500;color:var(--tx);display:flex;align-items:center;gap:8px}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.lvl-pill{display:flex;align-items:center;gap:6px;background:var(--bg2);border:0.5px solid var(--bd);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:500;color:var(--tx2)}
+.lvl-dot{width:5px;height:5px;border-radius:50%;background:var(--blue)}
+
+.widget-today{background:var(--blue);border-radius:var(--rl);padding:1.2rem 1.4rem;margin-bottom:1rem;color:white}
+.widget-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.widget-label{font-size:11px;font-weight:500;opacity:.7;text-transform:uppercase;letter-spacing:.06em}
+.widget-date{font-size:11px;opacity:.6}
+.widget-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.widget-stat-n{font-size:22px;font-weight:500;line-height:1;margin-bottom:3px;letter-spacing:-.02em}
+.widget-stat-l{font-size:10px;opacity:.65}
+.widget-bar-track{background:rgba(255,255,255,.2);border-radius:20px;height:3px;overflow:hidden;margin-top:1rem}
+.widget-bar-fill{height:100%;background:white;border-radius:20px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+.prog-card{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);padding:1.2rem 1.4rem;margin-bottom:1rem}
+.prog-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.prog-label{font-size:11px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em}
+.prog-pts{font-size:12px;color:var(--tx);font-weight:500}
+.bar-track{background:var(--bg2);border-radius:20px;height:5px;overflow:hidden}
+.bar-fill{height:100%;background:var(--blue);border-radius:20px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.prog-bot{display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);margin-top:6px}
+
+.tabs{display:flex;background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);padding:4px;gap:3px;margin-bottom:1rem}
+.tab{flex:1;padding:8px 4px;border-radius:var(--r);background:transparent;font-size:12px;font-weight:500;color:var(--tx2);cursor:pointer;transition:all .15s;text-align:center;border:none;font-family:var(--font)}
+.tab.active{background:var(--bg2);color:var(--tx)}
+.page{display:none}.page.active{display:block}
+
+.card{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);padding:1.2rem 1.4rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+
+.defi-card{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);padding:1.2rem 1.4rem;margin-bottom:1rem;position:relative;overflow:hidden}
+.defi-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue)}
+.defi-label{font-size:10px;font-weight:500;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.defi-desc{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:10px}
+.defi-xp{font-size:12px;font-weight:500;color:var(--blue);margin-bottom:12px}
+.defi-btn{width:100%;padding:10px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;font-size:13px;font-weight:500;color:var(--tx);cursor:pointer;font-family:var(--font);transition:all .15s}
+.defi-btn.done-btn{background:var(--green-l);color:var(--green-d);border-color:var(--green-b);cursor:default}
+
+.tirage-btn{width:100%;padding:11px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;font-size:13px;font-weight:500;color:var(--tx);cursor:pointer;font-family:var(--font);transition:all .15s;margin-bottom:6px}
+.tirage-btn:hover:not(:disabled){background:var(--bg2)}
+.tirage-btn:disabled{opacity:.3;cursor:not-allowed}
+.tirage-hint{font-size:11px;color:var(--tx3);text-align:center;margin-bottom:14px}
+
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.f-btn{padding:5px 13px;border:0.5px solid var(--bd);border-radius:20px;background:transparent;font-size:12px;color:var(--tx2);cursor:pointer;font-family:var(--font);transition:all .15s}
+.f-btn.on{background:var(--bg2);color:var(--tx);border-color:var(--bd2);font-weight:500}
+.f-btn.d1.on{background:var(--green-l);color:var(--green-d);border-color:var(--green-b)}
+.f-btn.d2.on{background:var(--amber-l);color:var(--amber-d);border-color:var(--amber-b)}
+.f-btn.d3.on{background:var(--red-l);color:var(--red-d);border-color:var(--red-b)}
+
+.m-count{font-size:11px;color:var(--tx3);margin-bottom:10px}
+.m-card{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:0.5px solid var(--bd)}
+.m-card:last-child{border-bottom:none;padding-bottom:0}
+.m-card.done{opacity:.4}
+.check{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--bd2);background:transparent;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.check.on{background:var(--blue);border-color:var(--blue)}
+.check.on::after{content:"";display:block;width:6px;height:6px;border-radius:50%;background:white}
+.m-body{flex:1;min-width:0}
+.m-top-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+.m-title{font-size:14px;font-weight:500;color:var(--tx)}
+.m-tag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.tEX{background:var(--blue-l);color:#0C447C}
+.tMA{background:var(--green-l);color:var(--green-d)}
+.tME{background:var(--purple-l);color:var(--purple-d)}
+.tSA{background:var(--red-l);color:var(--red-d)}
+.td1{background:var(--green-l);color:var(--green-d)}
+.td2{background:var(--amber-l);color:var(--amber-d)}
+.td3{background:var(--red-l);color:var(--red-d)}
+.m-desc{font-size:13px;color:var(--tx2);line-height:1.5;margin-bottom:3px}
+.m-xp{font-size:11px;font-weight:500;color:var(--blue)}
+.empty{text-align:center;padding:2.5rem;color:var(--tx2);font-size:13px}
+
+.timer-wrap{text-align:center;padding:1.5rem 0 1rem}
+.ring-wrap{position:relative;display:inline-block;margin-bottom:1.5rem}
+.ring-bg{fill:none;stroke:var(--bg2);stroke-width:6}
+.ring-fg{fill:none;stroke:var(--blue);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+.ring-inner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.timer-num{font-size:30px;font-weight:500;color:var(--tx);letter-spacing:-.02em;line-height:1}
+.timer-hint{font-size:11px;color:var(--tx3);margin-top:5px}
+.timer-btns{display:flex;gap:8px;justify-content:center;margin-bottom:1.25rem}
+.t-btn{padding:10px 24px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;font-size:13px;font-weight:500;color:var(--tx);cursor:pointer;font-family:var(--font);transition:all .15s}
+.t-btn:hover{background:var(--bg2)}
+.t-btn.go{border-color:var(--blue-m);color:var(--blue);background:var(--blue-l)}
+.presets{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:1rem}
+.preset{padding:6px 14px;border:0.5px solid var(--bd);border-radius:20px;font-size:12px;color:var(--tx2);cursor:pointer;font-family:var(--font);transition:all .15s}
+.preset.on{background:var(--bg2);color:var(--tx);border-color:var(--bd2)}
+.sess-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--bd);font-size:13px}
+.sess-row:last-child{border-bottom:none}
+.sess-xp{font-size:12px;font-weight:500;color:var(--blue)}
+
+.lv-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:0.5px solid var(--bd)}
+.lv-row:last-child{border-bottom:none}
+.lv-ico{width:32px;height:32px;border-radius:var(--r);background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:var(--tx2)}
+.lv-ico.cur{background:var(--blue-l);color:var(--blue)}
+.lv-name{font-size:13px;font-weight:500;color:var(--tx)}
+.lv-range{font-size:11px;color:var(--tx2);margin-top:2px}
+.lv-here{font-size:11px;font-weight:500;color:var(--blue);margin-top:2px}
+.lv-st{font-size:12px;color:var(--tx3);margin-left:auto}
+
+.week{display:flex;gap:6px;justify-content:center;margin:1.25rem 0}
+.day{width:36px;height:46px;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.day-sym{font-size:13px}.day-lbl{font-size:9px;font-weight:500}
+.day.ok{background:var(--blue);color:white}
+.day.today{background:var(--bg2);border:0.5px solid var(--blue);color:var(--blue)}
+.day.miss{background:var(--bg2);color:var(--tx3)}
+
+.serie-hero{text-align:center;padding:1rem 0 .5rem}
+.serie-n{font-size:44px;font-weight:500;color:var(--tx);letter-spacing:-.04em;line-height:1}
+.serie-sub{font-size:13px;color:var(--tx2);margin-top:6px}
+.rule-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:0.5px solid var(--bd);font-size:13px;color:var(--tx2);line-height:1.5}
+.rule-row:last-child{border-bottom:none}
+.rule-pip{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.pip-b{background:var(--blue)}.pip-r{background:var(--red-d)}.pip-g{background:var(--green-d)}
+.sim-btn{width:100%;padding:10px;margin-top:12px;border:0.5px solid var(--bd);border-radius:var(--r);background:transparent;font-size:12px;color:var(--tx2);cursor:pointer;font-family:var(--font);transition:all .15s}
+.sim-btn:hover{background:var(--bg2);color:var(--tx)}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;align-items:center;justify-content:center;padding:1.5rem}
+.overlay.show{display:flex}
+.ov-box{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);padding:2rem 1.75rem;text-align:center;max-width:340px;width:100%;animation:up .25s cubic-bezier(.4,0,.2,1)}
+@keyframes up{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ov-ico{width:44px;height:44px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:18px}
+.ov-ico.b{background:var(--blue-l);color:var(--blue)}
+.ov-ico.r{background:var(--red-l);color:var(--red-d)}
+.ov-title{font-size:17px;font-weight:500;color:var(--tx);margin-bottom:.5rem}
+.ov-sub{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:1.5rem}
+.ov-detail{background:var(--bg2);border-radius:var(--r);padding:12px 14px;margin-bottom:1.5rem;font-size:12px;color:var(--tx2);text-align:left;line-height:1.9;white-space:pre-line}
+.ov-btn{width:100%;padding:11px;border:none;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font)}
+.ov-btn.b{background:var(--blue);color:white}
+.ov-btn.r{background:var(--red-d);color:white}
+
+.install-banner{display:none;background:var(--blue-l);border:0.5px solid var(--blue-m);border-radius:var(--r);padding:11px 14px;margin-bottom:1rem;align-items:center;gap:12px}
+.install-banner.show{display:flex}
+.install-txt{flex:1;font-size:13px;color:#0C447C}
+.install-btn{padding:7px 14px;background:var(--blue);color:white;border:none;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:var(--font);font-weight:500;white-space:nowrap}
+
+.serment-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem;text-align:center}
+.serment-overlay.hidden{display:none}
+.serment-logo{font-size:15px;font-weight:500;color:var(--tx);margin-bottom:3rem;display:flex;align-items:center;gap:8px}
+.serment-dot{width:7px;height:7px;border-radius:50%;background:var(--blue)}
+.serment-title{font-size:22px;font-weight:500;color:var(--tx);margin-bottom:1rem}
+.serment-text{font-size:14px;color:var(--tx2);line-height:1.9;margin-bottom:2.5rem;max-width:300px}
+.serment-text strong{color:var(--tx);font-weight:500}
+.serment-btn{padding:14px 40px;background:var(--blue);color:white;border:none;border-radius:var(--r);font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font)}
+.serment-hint{font-size:11px;color:var(--tx3);margin-top:16px}
+</style>
+</head>
+<body>
+
+
+<div class="serment-overlay" id="serment">
+  <div class="serment-logo"><span class="serment-dot"></span>Discipline Mode</div>
+  <div class="serment-title">Avant de commencer</div>
+  <div class="serment-text">
+    Ici, <strong>seul l'honneur compte.</strong><br><br>
+    Mentir à cette app,<br>c'est te mentir à toi-même.
+  </div>
+  <button class="serment-btn" onclick="validerSerment()">Je m'engage</button>
+  <div class="serment-hint">Ce message n'apparaîtra qu'une seule fois.</div>
+</div>
+<div class="ripple-container" id="ripple-container"></div>
+
+<div class="serment-overlay" id="serment">
+  <div class="serment-logo"><span class="serment-dot"></span>Discipline Mode</div>
+  <div class="serment-title">Avant de commencer</div>
+  <div class="serment-text">
+    Ici, <strong>seul l'honneur compte.</strong><br><br>
+    Mentir à cette app,<br>c'est te mentir à toi-même.<br><br>
+    Tape <strong>Je m'engage</strong> pour continuer.
+  </div>
+  <button class="serment-btn ready" id="serment-btn" onclick="validerSerment()">Je m'engage — Commencer</button>
+  <div class="serment-hint">Ce message n'apparaîtra qu'une seule fois.</div>
+</div>
+
+<div class="splash hidden" id="splash">
+  <div class="splash-logo"><span class="splash-dot"></span>Discipline Mode</div>
+  <div class="splash-quote" id="splash-quote"></div>
+  <div class="splash-label">Citation du jour</div>
+  <div class="splash-bar"><div class="splash-prog" id="splash-prog"></div></div>
+</div>
+
+<div class="overlay" id="ov-lvl">
+  <div class="ov-box">
+    <div class="ov-ico b" id="ov-ico">★</div>
+    <div class="ov-title" id="ov-title">Niveau 2</div>
+    <div class="ov-sub" id="ov-sub">Tu progresses. Continue.</div>
+    <button class="ov-btn b" onclick="document.getElementById('ov-lvl').classList.remove('show')">Continuer</button>
+  </div>
+</div>
+<div class="overlay" id="ov-pen">
+  <div class="ov-box">
+    <div class="ov-ico r">!</div>
+    <div class="ov-title" style="color:var(--red-d)">Série interrompue</div>
+    <div class="ov-sub">Tu n'as complété aucune mission hier.</div>
+    <div class="ov-detail" id="pen-detail"></div>
+    <button class="ov-btn r" onclick="applyPen()">Reprendre</button>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
+  <div class="install-banner" id="install-banner">
+    <div class="install-txt">Installe l'app sur ton téléphone</div>
+    <button class="install-btn" id="install-btn">Installer</button>
+  </div>
+  <div class="header">
+    <div class="logo"><span class="logo-dot"></span>Discipline Mode</div>
+    <div class="lvl-pill"><span class="lvl-dot"></span><span id="lvl-text">Niveau 1 — Débutant</span></div>
+  </div>
+  <div class="widget-today">
+    <div class="widget-top">
+      <span class="widget-label">Aujourd'hui</span>
+      <span class="widget-date" id="w-date"></span>
+    </div>
+    <div class="widget-stats">
+      <div><div class="widget-stat-n" id="w-done">0</div><div class="widget-stat-l">missions</div></div>
+      <div><div class="widget-stat-n" id="w-xp">0</div><div class="widget-stat-l">XP gagnés</div></div>
+      <div><div class="widget-stat-n" id="w-serie">0</div><div class="widget-stat-l">jours série</div></div>
+    </div>
+    <div class="widget-bar-track"><div class="widget-bar-fill" id="w-bar" style="width:0%"></div></div>
+  </div>
+  <div class="prog-card">
+    <div class="prog-top">
+      <span class="prog-label" id="prog-lv">Progression</span>
+      <span class="prog-pts" id="prog-pts">0 / 100 XP</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="bar" style="width:0%"></div></div>
+    <div class="prog-bot"><span id="prog-cur">0 XP</span><span id="prog-nxt">Niveau 2 — 100 XP</span></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="goTab('missions',this)">Missions</button>
+    <button class="tab" onclick="goTab('timer',this)">Chrono</button>
+    <button class="tab" onclick="goTab('niveaux',this)">Niveaux</button>
+    <button class="tab" onclick="goTab('serie',this)">Série</button>
+  </div>
+
+  <div class="page active" id="page-missions">
+    <div class="defi-card">
+      <div class="defi-label">Défi de la semaine — +500 XP</div>
+      <div class="defi-desc" id="defi-desc"></div>
+      <div class="defi-btn" id="defi-btn" onclick="validerDefi()">Relever le défi</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Missions du jour</div>
+      <button class="tirage-btn" id="tirage-btn" onclick="tirage()">Tirage aléatoire ↺</button>
+      <div class="tirage-hint" id="tirage-hint">3 tirages disponibles aujourd'hui</div>
+      <div class="card-title" style="margin-top:4px">Filtres</div>
+      <div class="filter-row" id="cat-row">
+        <button class="f-btn on" onclick="sf('cat','ALL',this)">Toutes</button>
+        <button class="f-btn" onclick="sf('cat','EXPERIENCE',this)">Expérience</button>
+        <button class="f-btn" onclick="sf('cat','MAISON',this)">Maison</button>
+        <button class="f-btn" onclick="sf('cat','MENTAL',this)">Mental</button>
+        <button class="f-btn" onclick="sf('cat','SANTE',this)">Santé</button>
+      </div>
+      <div class="filter-row" id="diff-row" style="margin-top:6px;margin-bottom:14px">
+        <button class="f-btn on" onclick="sf('diff',0,this)">Toutes</button>
+        <button class="f-btn d1" onclick="sf('diff',1,this)">Facile</button>
+        <button class="f-btn d2" onclick="sf('diff',2,this)">Moyen</button>
+        <button class="f-btn d3" onclick="sf('diff',3,this)">Difficile</button>
+      </div>
+      <div class="m-count" id="m-count"></div>
+      <div id="m-list"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-timer">
+    <div class="card">
+      <div class="card-title">Session de travail</div>
+      <div class="timer-wrap">
+        <div class="ring-wrap">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle class="ring-bg" cx="75" cy="75" r="66" transform="rotate(-90 75 75)"/>
+            <circle class="ring-fg" id="ring" cx="75" cy="75" r="66" stroke-dasharray="415" stroke-dashoffset="415" transform="rotate(-90 75 75)"/>
+          </svg>
+          <div class="ring-inner">
+            <div class="timer-num" id="t-display">00:00</div>
+            <div class="timer-hint" id="t-hint">Choisir une durée</div>
+          </div>
+        </div>
+        <div class="presets">
+          <div class="preset" onclick="setP(5,this)">5 min</div>
+          <div class="preset on" onclick="setP(25,this)">25 min</div>
+          <div class="preset" onclick="setP(45,this)">45 min</div>
+          <div class="preset" onclick="setP(60,this)">1 h</div>
+          <div class="preset" onclick="setP(0,this)">Libre</div>
+        </div>
+        <div class="timer-btns">
+          <button class="t-btn" id="t-start" onclick="toggleT()">Démarrer</button>
+          <button class="t-btn" onclick="resetT()">Réinitialiser</button>
+        </div>
+      </div>
+      <div class="card-title">Historique</div>
+      <div id="sess-list"><div style="font-size:13px;color:var(--tx2)">Aucune session.</div></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-niveaux">
+    <div class="card">
+      <div class="card-title">Tous les niveaux</div>
+      <div id="lv-grid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-serie">
+    <div class="card">
+      <div class="serie-hero">
+        <div class="serie-n" id="serie-n">0</div>
+        <div class="serie-sub">jours de suite</div>
+      </div>
+      <div class="week" id="week"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Règles</div>
+      <div class="rule-row"><div class="rule-pip pip-b"></div><div>Complète au moins 1 mission par jour pour valider ta série.</div></div>
+      <div class="rule-row"><div class="rule-pip pip-r"></div><div>Série cassée : remise à 0, −50 XP, mission difficile obligatoire le lendemain.</div></div>
+      <div class="rule-row"><div class="rule-pip pip-g"></div><div>7 jours → +100 XP · 30 jours → +500 XP · 100 jours → +2000 XP.</div></div>
+      <button class="sim-btn" onclick="simPen()">Simuler série cassée</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LEVELS=[
+  {n:1,ico:"○",label:"Débutant",min:0,max:100,desc:"Le point de départ."},
+  {n:2,ico:"◐",label:"En progression",min:100,max:250,desc:"Tu prends de la vitesse."},
+  {n:3,ico:"●",label:"Focus",min:250,max:500,desc:"La concentration est là."},
+  {n:4,ico:"◈",label:"Discipliné",min:500,max:900,desc:"La discipline est ton mode de vie."},
+  {n:5,ico:"◆",label:"Guerrier",min:900,max:1500,desc:"Tu repousses tes limites."},
+  {n:6,ico:"★",label:"Maître",min:1500,max:2500,desc:"Tu inspires les autres."},
+  {n:7,ico:"✦",label:"Légende",min:2500,max:Infinity,desc:"Peu atteignent ce niveau."}
+];
+const XP={1:20,2:50,3:100};
+const DAYS=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+const CITATIONS=[\"La discipline, c'est choisir entre ce que tu veux maintenant et ce que tu veux vraiment.\", 'Chaque action compte. Chaque jour compte.', \"Tu ne te bats pas contre les autres. Tu te bats contre la version d'hier de toi-même.\", \"Le succès n'est pas une destination. C'est une habitude quotidienne.\", \"Fais ce qui est difficile pendant que c'est encore possible.\", \"L'excellence n'est pas un acte, c'est une habitude.\", \"Ton futur se construit aujourd'hui, pas demain.\", 'La douleur de la discipline est légère comparée à celle du regret.', 'Sois la personne que tu admires.', 'Un jour ou jour un. Tu choisis.', \"Ce que tu fais aujourd'hui définit qui tu seras demain.\", 'La motivation te lance. La discipline te maintient.', 'Personne ne vient te sauver. Lève-toi.', \"Le confort est l'ennemi de la croissance.\", \"La différence entre qui tu es et qui tu veux être, c'est ce que tu fais.\", 'Gagne la matinée, gagne la journée.', \"Pas d'excuse. Pas de regret.\", 'Tu es plus fort que tes excuses.', \"Fais-le même quand tu n'en as pas envie.\", 'Avance. Toujours avance.'];
+const MODE_DEFI=[\"Parle à 5 inconnus aujourd'hui et engage une vraie conversation avec chacun.\", 'Passe 24h sans aucun écran. Aucune exception.', \"Cours 10 km d'une traite aujourd'hui.\", 'Jeûne complet pendant 24h. Eau uniquement.', 'Écris 1000 mots sur ta vision de vie dans 5 ans.', \"Nettoie et réorganise l'intégralité de ton logement en une journée.\", 'Passe 48h sans réseaux sociaux, actualités ni divertissement.', 'Lève-toi à 5h du matin et accomplis 3 missions avant 8h.'];
+const ALL=[
+{diff:1,cat:"EXPERIENCE",title:"Nouveau goût",desc:"Mange un fruit que tu n'as jamais goûté de ta vie."},
+{diff:1,cat:"EXPERIENCE",title:"Chemin différent",desc:"Prends un itinéraire différent de ton trajet habituel."},
+{diff:1,cat:"EXPERIENCE",title:"Compliment inconnu",desc:"Fais un compliment sincère à un inconnu."},
+{diff:1,cat:"EXPERIENCE",title:"Silence volontaire",desc:"Passe 10 minutes sans parler ni écrire."},
+{diff:1,cat:"EXPERIENCE",title:"Nouveau son",desc:"Écoute un style de musique que tu n'écoutes jamais."},
+{diff:2,cat:"EXPERIENCE",title:"Déconnexion",desc:"Passe 2 heures sans téléphone ni écran."},
+{diff:2,cat:"EXPERIENCE",title:"Lettre réelle",desc:"Écris une lettre à quelqu'un à la main."},
+{diff:2,cat:"EXPERIENCE",title:"Objet inutile",desc:"Achète ou récupère un objet totalement inutile mais intéressant."},
+{diff:2,cat:"EXPERIENCE",title:"Nouveau lieu",desc:"Va dans un endroit où tu n'es jamais allé dans ta ville."},
+{diff:2,cat:"EXPERIENCE",title:"Observation",desc:"Observe les gens 10 minutes sans distraction."},
+{diff:2,cat:"EXPERIENCE",title:"Changement d'habitude",desc:"Fais une action quotidienne avec ta main non dominante."},
+{diff:3,cat:"EXPERIENCE",title:"Sortie seule",desc:"Sors seul sans objectif précis pendant 1 heure."},
+{diff:3,cat:"EXPERIENCE",title:"Discomfort volontaire",desc:"Fais quelque chose qui te met légèrement mal à l'aise socialement."},
+{diff:3,cat:"EXPERIENCE",title:"Jour différent",desc:"Change totalement ta routine aujourd'hui."},
+{diff:3,cat:"EXPERIENCE",title:"Rencontre",desc:"Engage une vraie conversation avec un inconnu."},
+{diff:3,cat:"EXPERIENCE",title:"Minimalisme",desc:"Passe 3 heures sans aucune distraction numérique."},
+{diff:3,cat:"EXPERIENCE",title:"Nuit différente",desc:"Couche-toi sans écran du tout."},
+{diff:3,cat:"EXPERIENCE",title:"Action spontanée",desc:"Fais une action totalement non planifiée aujourd'hui."},
+{diff:3,cat:"EXPERIENCE",title:"Exploration",desc:"Explore une zone inconnue sans GPS."},
+{diff:3,cat:"EXPERIENCE",title:"Reset mental",desc:"Passe 30 minutes seul dans le silence total sans bouger."},
+{diff:1,cat:"MAISON",title:"Faire son lit",desc:"Fais ton lit parfaitement sans exception."},
+{diff:1,cat:"MAISON",title:"Nettoyage rapide bureau",desc:"Range ton bureau pendant 10 minutes."},
+{diff:1,cat:"MAISON",title:"Tri email",desc:"Supprime 20 emails inutiles."},
+{diff:1,cat:"MAISON",title:"Téléphone propre",desc:"Nettoie ton téléphone et écran."},
+{diff:1,cat:"MAISON",title:"Jet d'objets",desc:"Jette 5 objets inutiles chez toi."},
+{diff:1,cat:"MAISON",title:"Sac propre",desc:"Vide et range ton sac."},
+{diff:1,cat:"MAISON",title:"Poubelle",desc:"Vide toutes les poubelles de ta chambre."},
+{diff:1,cat:"MAISON",title:"Chaussures",desc:"Range toutes tes chaussures."},
+{diff:1,cat:"MAISON",title:"Surface propre",desc:"Nettoie une surface de ton choix."},
+{diff:1,cat:"MAISON",title:"Organisation simple",desc:"Range un petit espace désordonné."},
+{diff:2,cat:"MAISON",title:"Applications",desc:"Supprime 10 applications inutiles."},
+{diff:2,cat:"MAISON",title:"Salle de bain",desc:"Nettoie entièrement ta salle de bain."},
+{diff:2,cat:"MAISON",title:"Frigo",desc:"Trie ton frigo complètement."},
+{diff:2,cat:"MAISON",title:"Documents",desc:"Classe tous tes documents importants."},
+{diff:2,cat:"MAISON",title:"Réparation",desc:"Répare un objet cassé."},
+{diff:2,cat:"MAISON",title:"Placard partiel",desc:"Range un placard ou tiroir."},
+{diff:2,cat:"MAISON",title:"Cuisine",desc:"Nettoie ta cuisine."},
+{diff:2,cat:"MAISON",title:"Photos",desc:"Supprime 50 photos inutiles."},
+{diff:2,cat:"MAISON",title:"Câbles",desc:"Range tous tes câbles électroniques."},
+{diff:2,cat:"MAISON",title:"Lit + chambre",desc:"Range ta chambre entièrement."},
+{diff:3,cat:"MAISON",title:"Placard complet",desc:"Vide entièrement un placard."},
+{diff:3,cat:"MAISON",title:"Chambre clean",desc:"Nettoyage complet de ta chambre."},
+{diff:3,cat:"MAISON",title:"Maison ordre",desc:"Réorganise un espace entier."},
+{diff:3,cat:"MAISON",title:"Paperasse",desc:"Règle toute ta paperasse en retard."},
+{diff:3,cat:"MAISON",title:"Deep clean",desc:"Nettoyage total de ton environnement."},
+{diff:1,cat:"MENTAL",title:"Objectif",desc:"Écris un objectif du jour."},
+{diff:1,cat:"MENTAL",title:"Marche sans téléphone",desc:"10 minutes sans écran."},
+{diff:1,cat:"MENTAL",title:"Gratitude",desc:"Note une chose positive."},
+{diff:1,cat:"MENTAL",title:"Lecture",desc:"Lis 10 pages."},
+{diff:1,cat:"MENTAL",title:"Respiration",desc:"Respire 5 minutes calmement."},
+{diff:1,cat:"MENTAL",title:"Organisation",desc:"Écris ton planning du jour."},
+{diff:1,cat:"MENTAL",title:"Focus",desc:"5 min sans distraction."},
+{diff:1,cat:"MENTAL",title:"Silence",desc:"2 min silence total."},
+{diff:1,cat:"MENTAL",title:"Réflexion",desc:"Écris ce que tu ressens."},
+{diff:1,cat:"MENTAL",title:"Clarté",desc:"Note 1 chose importante."},
+{diff:2,cat:"MENTAL",title:"Lecture longue",desc:"20 pages sans interruption."},
+{diff:2,cat:"MENTAL",title:"Objectifs vie",desc:"Écris 3 objectifs long terme."},
+{diff:2,cat:"MENTAL",title:"Détox réseaux",desc:"2h sans réseaux sociaux."},
+{diff:2,cat:"MENTAL",title:"Appel",desc:"Appelle un proche."},
+{diff:2,cat:"MENTAL",title:"Méditation",desc:"10 min méditation."},
+{diff:2,cat:"MENTAL",title:"Planification",desc:"Planifie ta semaine."},
+{diff:2,cat:"MENTAL",title:"Focus",desc:"30 min travail sans distraction."},
+{diff:2,cat:"MENTAL",title:"Journal",desc:"Écris tes pensées."},
+{diff:2,cat:"MENTAL",title:"Analyse",desc:"Analyse une erreur récente."},
+{diff:2,cat:"MENTAL",title:"Discipline",desc:"Évite distraction 1h."},
+{diff:3,cat:"MENTAL",title:"Détox totale",desc:"4h sans distraction."},
+{diff:3,cat:"MENTAL",title:"Focus extrême",desc:"1h concentration totale."},
+{diff:3,cat:"MENTAL",title:"Silence total",desc:"30 min sans bouger."},
+{diff:3,cat:"MENTAL",title:"Reset mental",desc:"Aucune stimulation 1h."},
+{diff:3,cat:"MENTAL",title:"Mode moine",desc:"24h sans réseaux sociaux."},
+{diff:1,cat:"SANTE",title:"Hydratation",desc:"Bois 1 litre d'eau supplémentaire."},
+{diff:1,cat:"SANTE",title:"Pompes",desc:"Fais 10 pompes."},
+{diff:1,cat:"SANTE",title:"Marche",desc:"Marche 10 minutes."},
+{diff:1,cat:"SANTE",title:"Étirements",desc:"Étire ton corps 5 minutes."},
+{diff:1,cat:"SANTE",title:"Sans sucre",desc:"Pas de sucre pendant 24h."},
+{diff:1,cat:"SANTE",title:"Respiration",desc:"Respiration profonde 5 min."},
+{diff:1,cat:"SANTE",title:"Douche",desc:"Prends une douche froide rapide."},
+{diff:1,cat:"SANTE",title:"Posture",desc:"Corrige ta posture 1h."},
+{diff:1,cat:"SANTE",title:"Activité",desc:"Bouge ton corps 15 min."},
+{diff:1,cat:"SANTE",title:"Pause écran",desc:"1h sans écran."},
+{diff:2,cat:"SANTE",title:"Sport",desc:"20 minutes d'exercice."},
+{diff:2,cat:"SANTE",title:"Course",desc:"Cours 1 km."},
+{diff:2,cat:"SANTE",title:"Circuit",desc:"30 pompes réparties dans la journée."},
+{diff:2,cat:"SANTE",title:"Douche froide",desc:"Douche froide complète."},
+{diff:2,cat:"SANTE",title:"Repas sain",desc:"Prépare un repas sain."},
+{diff:2,cat:"SANTE",title:"Marche longue",desc:"Marche 30 minutes."},
+{diff:2,cat:"SANTE",title:"Cardio",desc:"15 min cardio intense."},
+{diff:2,cat:"SANTE",title:"Étirements",desc:"10 min étirements complets."},
+{diff:2,cat:"SANTE",title:"Sommeil",desc:"Couche-toi plus tôt."},
+{diff:2,cat:"SANTE",title:"Hydratation",desc:"2 litres d'eau dans la journée."},
+{diff:3,cat:"SANTE",title:"Sport intense",desc:"30 minutes sans pause."},
+{diff:3,cat:"SANTE",title:"Full body",desc:"Entraînement complet corps entier."},
+{diff:3,cat:"SANTE",title:"Jeûne",desc:"12h sans nourriture."},
+{diff:3,cat:"SANTE",title:"Endurance",desc:"Sport jusqu'à fatigue."},
+{diff:3,cat:"SANTE",title:"Discipline alimentaire",desc:"Zéro junk food 24h."},
+{diff:1,cat:'EXPERIENCE',title:'Café inconnu',desc:'Entre dans un café que tu n\'as jamais testé.'},
+{diff:1,cat:'EXPERIENCE',title:'Photo du jour',desc:'Prends une photo de quelque chose qui t\'inspire.'},
+{diff:1,cat:'EXPERIENCE',title:'Sourire d\'abord',desc:'Souris en premier à 3 personnes aujourd\'hui.'},
+{diff:1,cat:'EXPERIENCE',title:'Main gauche',desc:'Mange ton repas avec ta main non dominante.'},
+{diff:1,cat:'EXPERIENCE',title:'Marché local',desc:'Visite un marché ou une épicerie de quartier.'},
+{diff:1,cat:'EXPERIENCE',title:'Debout tôt',desc:'Lève-toi 30 minutes plus tôt que d\'habitude.'},
+{diff:1,cat:'EXPERIENCE',title:'Sans montre',desc:'Passe la matinée sans regarder l\'heure.'},
+{diff:1,cat:'EXPERIENCE',title:'Nouveau podcast',desc:'Écoute un épisode d\'un podcast inconnu.'},
+{diff:1,cat:'EXPERIENCE',title:'Cuisine étrangère',desc:'Mange un plat d\'une culture que tu ne connais pas.'},
+{diff:1,cat:'EXPERIENCE',title:'Appel vocal',desc:'Appelle quelqu\'un au lieu d\'envoyer un message.'},
+{diff:1,cat:'EXPERIENCE',title:'Carnet de bord',desc:'Note 3 choses remarquables de ta journée.'},
+{diff:1,cat:'EXPERIENCE',title:'Plein air',desc:'Mange dehors, même 10 minutes.'},
+{diff:1,cat:'EXPERIENCE',title:'Documentaire',desc:'Regarde un documentaire sur un sujet inconnu.'},
+{diff:1,cat:'EXPERIENCE',title:'Question ouverte',desc:'Pose une vraie question à quelqu\'un aujourd\'hui.'},
+{diff:1,cat:'EXPERIENCE',title:'Sans café',desc:'Passe la matinée sans caféine.'},
+{diff:1,cat:'EXPERIENCE',title:'Trajet à pied',desc:'Remplace un trajet en transport par la marche.'},
+{diff:1,cat:'EXPERIENCE',title:'Musée virtuel',desc:'Visite un musée en ligne pendant 15 min.'},
+{diff:2,cat:'EXPERIENCE',title:'Journée sans plainte',desc:'Ne te plains de rien pendant toute la journée.'},
+{diff:2,cat:'EXPERIENCE',title:'Atelier créatif',desc:'Essaie une activité créative pendant 30 min.'},
+{diff:2,cat:'EXPERIENCE',title:'Sans opinion',desc:'Écoute quelqu\'un sans donner ton avis.'},
+{diff:2,cat:'EXPERIENCE',title:'Inconfort thermique',desc:'Passe 5 minutes dans le froid volontairement.'},
+{diff:2,cat:'EXPERIENCE',title:'Langue étrangère',desc:'Apprends 10 mots dans une langue inconnue.'},
+{diff:2,cat:'EXPERIENCE',title:'Voisin inconnu',desc:'Dis bonjour à un voisin que tu ne connais pas.'},
+{diff:2,cat:'EXPERIENCE',title:'Sans musique',desc:'Fais ta routine matinale en silence complet.'},
+{diff:2,cat:'EXPERIENCE',title:'Cadeau surprise',desc:'Offre quelque chose à quelqu\'un sans raison.'},
+{diff:2,cat:'EXPERIENCE',title:'Journée analogique',desc:'Utilise papier et stylo au lieu du téléphone.'},
+{diff:2,cat:'EXPERIENCE',title:'Bénévolat',desc:'Aide quelqu\'un sans rien attendre en retour.'},
+{diff:2,cat:'EXPERIENCE',title:'Lever du soleil',desc:'Observe le lever du soleil demain matin.'},
+{diff:2,cat:'EXPERIENCE',title:'Sans miroir',desc:'Évite de te regarder dans un miroir 4 heures.'},
+{diff:2,cat:'EXPERIENCE',title:'Monologue positif',desc:'Parle-toi positivement à voix haute 5 minutes.'},
+{diff:2,cat:'EXPERIENCE',title:'Transport différent',desc:'Prends un mode de transport inhabituel.'},
+{diff:2,cat:'EXPERIENCE',title:'Cuisine improvise',desc:'Cuisine un repas sans recette ni aide.'},
+{diff:2,cat:'EXPERIENCE',title:'Artiste local',desc:'Écoute un artiste musical de ta région.'},
+{diff:3,cat:'EXPERIENCE',title:'Jeûne informationnel',desc:'Aucune actualité ni news pendant 24h.'},
+{diff:3,cat:'EXPERIENCE',title:'Solo total',desc:'Passe une soirée entière seul sans distraction.'},
+{diff:3,cat:'EXPERIENCE',title:'Discours public',desc:'Parle devant un groupe, même petit.'},
+{diff:3,cat:'EXPERIENCE',title:'Défi physique',desc:'Fais quelque chose physiquement difficile aujourd\'hui.'},
+{diff:3,cat:'EXPERIENCE',title:'Journée sans opinion',desc:'Ne juge personne mentalement de la journée.'},
+{diff:3,cat:'EXPERIENCE',title:'Nuit blanche courte',desc:'Travaille jusqu\'à minuit sur un projet personnel.'},
+{diff:3,cat:'EXPERIENCE',title:'Confrontation douce',desc:'Exprime un désaccord avec respect et calme.'},
+{diff:3,cat:'EXPERIENCE',title:'Nouveau sport',desc:'Essaie un sport que tu n\'as jamais pratiqué.'},
+{diff:3,cat:'EXPERIENCE',title:'Voyage local',desc:'Explore une ville proche que tu ne connais pas.'},
+{diff:3,cat:'EXPERIENCE',title:'Sans achats',desc:'Passe 48h sans aucun achat non essentiel.'},
+{diff:3,cat:'EXPERIENCE',title:'Improvisation',desc:'Improvise une présentation de 5 minutes.'},
+{diff:3,cat:'EXPERIENCE',title:'Journée sans confort',desc:'Évite tous tes réconforts habituels 24h.'},
+{diff:3,cat:'EXPERIENCE',title:'Journée sans plaintes',desc:'Zéro plainte, zéro critique négative, 24h entières.'},
+{diff:3,cat:'EXPERIENCE',title:'Contact froid',desc:'Envoie un message à quelqu\'un perdu de vue.'},
+{diff:3,cat:'EXPERIENCE',title:'Challenge créatif',desc:'Crée quelque chose de zéro en moins de 2h.'},
+{diff:3,cat:'EXPERIENCE',title:'Peur affrontée',desc:'Fais une chose qui te fait peur aujourd\'hui.'},
+{diff:1,cat:'MAISON',title:'Fenêtres',desc:'Nettoie toutes les vitres de ton espace.'},
+{diff:1,cat:'MAISON',title:'Entrée propre',desc:'Range et nettoie l\'entrée de ton logement.'},
+{diff:1,cat:'MAISON',title:'Livres',desc:'Trie tes livres et retire ceux inutiles.'},
+{diff:1,cat:'MAISON',title:'Luminaires',desc:'Nettoie les ampoules et abat-jours.'},
+{diff:1,cat:'MAISON',title:'Tiroir cuisine',desc:'Range entièrement un tiroir de cuisine.'},
+{diff:1,cat:'MAISON',title:'Plantes',desc:'Arrose et entretiens tes plantes.'},
+{diff:1,cat:'MAISON',title:'Miroirs',desc:'Nettoie tous les miroirs de ton logement.'},
+{diff:1,cat:'MAISON',title:'Clés',desc:'Range tes clés à un endroit fixe et logique.'},
+{diff:1,cat:'MAISON',title:'Prises',desc:'Débranche les appareils inutilisés.'},
+{diff:1,cat:'MAISON',title:'Portemanteau',desc:'Range et trie les vêtements suspendus.'},
+{diff:1,cat:'MAISON',title:'Boîte aux lettres',desc:'Vide et trie ta boîte aux lettres.'},
+{diff:1,cat:'MAISON',title:'Balcon',desc:'Range et nettoie ton balcon ou terrasse.'},
+{diff:1,cat:'MAISON',title:'Serviettes',desc:'Remplace et lave toutes tes serviettes.'},
+{diff:1,cat:'MAISON',title:'Draps',desc:'Change tes draps et taies d\'oreiller.'},
+{diff:1,cat:'MAISON',title:'Sous le lit',desc:'Nettoie et range sous ton lit.'},
+{diff:1,cat:'MAISON',title:'Prises multiples',desc:'Retire les appareils non utilisés des multiprises.'},
+{diff:1,cat:'MAISON',title:'Epices',desc:'Trie et range tes épices et condiments.'},
+{diff:2,cat:'MAISON',title:'Meuble TV',desc:'Range et dépoussierre le meuble TV complet.'},
+{diff:2,cat:'MAISON',title:'Étagères',desc:'Nettoie et réorganise toutes tes étagères.'},
+{diff:2,cat:'MAISON',title:'Vêtements',desc:'Trie ta garde-robe entière, donne ce qui ne sert plus.'},
+{diff:2,cat:'MAISON',title:'Stocks cuisine',desc:'Trie et organise tes placards de nourriture.'},
+{diff:2,cat:'MAISON',title:'Boîtes de rangement',desc:'Trie le contenu de toutes tes boîtes.'},
+{diff:2,cat:'MAISON',title:'Murs',desc:'Nettoie les traces et taches sur les murs.'},
+{diff:2,cat:'MAISON',title:'Nettoyage sol',desc:'Passe l\'aspirateur et la serpillère partout.'},
+{diff:2,cat:'MAISON',title:'Sous-vêtements',desc:'Trie et remplace les sous-vêtements usés.'},
+{diff:2,cat:'MAISON',title:'Abonnements',desc:'Résilie un abonnement inutile aujourd\'hui.'},
+{diff:2,cat:'MAISON',title:'Médicaments',desc:'Trie et jette les médicaments périmés.'},
+{diff:2,cat:'MAISON',title:'Contacts téléphone',desc:'Supprime les contacts inutiles de ton téléphone.'},
+{diff:2,cat:'MAISON',title:'Signets web',desc:'Trie et supprime tes favoris internet.'},
+{diff:2,cat:'MAISON',title:'Produits ménagers',desc:'Trie et jette les produits périmés.'},
+{diff:2,cat:'MAISON',title:'Trousse',desc:'Vide et retrie ta trousse ou nécessaire.'},
+{diff:2,cat:'MAISON',title:'Bureau numérique',desc:'Range le bureau de ton ordinateur.'},
+{diff:3,cat:'MAISON',title:'Déménagement intérieur',desc:'Réorganise complètement une pièce entière.'},
+{diff:3,cat:'MAISON',title:'Zéro déchet',desc:'Réduis tes déchets au minimum pendant 24h.'},
+{diff:3,cat:'MAISON',title:'Rénovation mini',desc:'Répare ou améliore quelque chose chez toi.'},
+{diff:3,cat:'MAISON',title:'Vide-grenier',desc:'Prépare une boîte d\'objets à donner ou vendre.'},
+{diff:3,cat:'MAISON',title:'Minimalisme extrême',desc:'Jette 50 objets inutiles en une session.'},
+{diff:3,cat:'MAISON',title:'Cuisine préparation',desc:'Prépare tes repas pour 3 jours d\'avance.'},
+{diff:3,cat:'MAISON',title:'Décoration',desc:'Améliore l\'esthétique d\'une pièce entière.'},
+{diff:3,cat:'MAISON',title:'Inventaire total',desc:'Liste tous tes biens importants par catégorie.'},
+{diff:3,cat:'MAISON',title:'Grand ménage',desc:'Nettoyage complet de tout le logement en une journée.'},
+{diff:3,cat:'MAISON',title:'Désencombrement digital',desc:'Libère 10 Go sur tes appareils numériques.'},
+{diff:3,cat:'MAISON',title:'Rangement invisible',desc:'Cache ou range tous les fils et câbles visibles.'},
+{diff:3,cat:'MAISON',title:'Placard à chaussures',desc:'Trie entièrement toutes tes chaussures.'},
+{diff:3,cat:'MAISON',title:'Administratif complet',desc:'Classe et scanne tous tes documents importants.'},
+{diff:3,cat:'MAISON',title:'Épargne rangement',desc:'Calcule et range ton budget du mois.'},
+{diff:3,cat:'MAISON',title:'Kit urgence',desc:'Prépare un sac ou kit d\'urgence chez toi.'},
+{diff:3,cat:'MAISON',title:'Audit maison',desc:'Fais le tour complet de tout ce qui manque ou casse.'},
+{diff:1,cat:'MENTAL',title:'Visualisation',desc:'Visualise ta journée idéale pendant 5 minutes.'},
+{diff:1,cat:'MENTAL',title:'Affirmation',desc:'Répète une affirmation positive 10 fois.'},
+{diff:1,cat:'MENTAL',title:'Pause consciente',desc:'Fais une pause de 5 min sans rien faire.'},
+{diff:1,cat:'MENTAL',title:'Écriture libre',desc:'Écris sans filtre pendant 5 minutes.'},
+{diff:1,cat:'MENTAL',title:'Liste succès',desc:'Note 3 choses que tu as bien faites hier.'},
+{diff:1,cat:'MENTAL',title:'Intention du jour',desc:'Choisis une intention pour guider ta journée.'},
+{diff:1,cat:'MENTAL',title:'Bilan rapide',desc:'Évalue ta semaine en 3 mots.'},
+{diff:1,cat:'MENTAL',title:'Concentration',desc:'Travaille sur une seule tâche 10 minutes.'},
+{diff:1,cat:'MENTAL',title:'Déconnexion soir',desc:'Pose le téléphone 30 min avant de dormir.'},
+{diff:1,cat:'MENTAL',title:'Question du jour',desc:'Pose-toi une vraie question sur toi-même.'},
+{diff:1,cat:'MENTAL',title:'Apprentissage rapide',desc:'Apprends un fait nouveau aujourd\'hui.'},
+{diff:1,cat:'MENTAL',title:'Priorisation',desc:'Identifie ta tâche la plus importante du jour.'},
+{diff:1,cat:'MENTAL',title:'Curiosité',desc:'Creuse un sujet qui t\'intéresse 10 minutes.'},
+{diff:1,cat:'MENTAL',title:'Mindset',desc:'Remplace une pensée négative par une positive.'},
+{diff:1,cat:'MENTAL',title:'Routine soir',desc:'Crée une routine de 10 min avant de dormir.'},
+{diff:1,cat:'MENTAL',title:'Pause nature',desc:'Passe 10 min à observer la nature autour de toi.'},
+{diff:1,cat:'MENTAL',title:'Décision rapide',desc:'Prends une décision que tu remets depuis longtemps.'},
+{diff:2,cat:'MENTAL',title:'Lecture non-fiction',desc:'Lis 30 pages d\'un livre de développement.'},
+{diff:2,cat:'MENTAL',title:'Brainstorming',desc:'Génère 10 idées sur un projet en cours.'},
+{diff:2,cat:'MENTAL',title:'Revue hebdo',desc:'Analyse ta semaine passée et planifie la suivante.'},
+{diff:2,cat:'MENTAL',title:'Carte mentale',desc:'Crée une carte mentale sur un sujet important.'},
+{diff:2,cat:'MENTAL',title:'Sans jugement',desc:'Observe tes pensées sans les juger pendant 20 min.'},
+{diff:2,cat:'MENTAL',title:'Lettre à soi',desc:'Écris une lettre à toi-même dans 1 an.'},
+{diff:2,cat:'MENTAL',title:'Deep work',desc:'Travaille en concentration totale pendant 1h.'},
+{diff:2,cat:'MENTAL',title:'Peur identifiée',desc:'Écris ta peur principale et son origine.'},
+{diff:2,cat:'MENTAL',title:'Valeurs',desc:'Liste tes 5 valeurs fondamentales.'},
+{diff:2,cat:'MENTAL',title:'Revue mensuelle',desc:'Fais le bilan complet du mois écoulé.'},
+{diff:2,cat:'MENTAL',title:'Habitude tracée',desc:'Suis une habitude dans un tableau pendant 7 jours.'},
+{diff:2,cat:'MENTAL',title:'Vision board',desc:'Crée une liste de tes objectifs visuels.'},
+{diff:2,cat:'MENTAL',title:'Feedback',desc:'Demande un retour honnête à quelqu\'un de confiance.'},
+{diff:2,cat:'MENTAL',title:'Stoïcisme',desc:'Médite 15 min sur ce qui ne dépend pas de toi.'},
+{diff:3,cat:'MENTAL',title:'Jeûne mental',desc:'Aucune musique, podcast ni vidéo de la journée.'},
+{diff:3,cat:'MENTAL',title:'Journaling profond',desc:'Écris 2 pages sur tes blocages actuels.'},
+{diff:3,cat:'MENTAL',title:'Plan de vie',desc:'Rédige ton plan pour les 12 prochains mois.'},
+{diff:3,cat:'MENTAL',title:'Confrontation mentale',desc:'Affronte une pensée que tu évites depuis longtemps.'},
+{diff:3,cat:'MENTAL',title:'Mono-tâche extrême',desc:'Fais une seule chose pendant 3h sans interruption.'},
+{diff:3,cat:'MENTAL',title:'Bilan annuel',desc:'Fais le bilan complet de l\'année écoulée.'},
+{diff:3,cat:'MENTAL',title:'Objectif découpé',desc:'Décompose ton grand objectif en 30 étapes.'},
+{diff:3,cat:'MENTAL',title:'Écriture longue',desc:'Écris 500 mots sur ce que tu veux vraiment.'},
+{diff:3,cat:'MENTAL',title:'Détox totale 2',desc:'Aucun contenu externe consommé pendant 8h.'},
+{diff:3,cat:'MENTAL',title:'Travail profond',desc:'Bloc de 4h sans interruption sur ta priorité.'},
+{diff:3,cat:'MENTAL',title:'Philosophie',desc:'Lis et applique un principe stoïcien aujourd\'hui.'},
+{diff:3,cat:'MENTAL',title:'Revue critique',desc:'Analyse honnêtement tes 3 derniers échecs.'},
+{diff:3,cat:'MENTAL',title:'Engagement public',desc:'Annonce un objectif publiquement pour t\'engager.'},
+{diff:3,cat:'MENTAL',title:'Sans avis extérieur',desc:'Prends une décision importante sans demander conseil.'},
+{diff:3,cat:'MENTAL',title:'Transmission',desc:'Enseigne quelque chose que tu sais à quelqu\'un.'},
+{diff:1,cat:'SANTE',title:'Légumes',desc:'Mange une portion de légumes à chaque repas.'},
+{diff:1,cat:'SANTE',title:'Escaliers',desc:'Prends les escaliers au lieu de l\'ascenseur.'},
+{diff:1,cat:'SANTE',title:'Squats',desc:'Fais 20 squats dans la journée.'},
+{diff:1,cat:'SANTE',title:'Gainage',desc:'Tiens la planche 1 minute.'},
+{diff:1,cat:'SANTE',title:'Eau matin',desc:'Bois un grand verre d\'eau au réveil.'},
+{diff:1,cat:'SANTE',title:'Fruits',desc:'Mange 2 fruits frais dans la journée.'},
+{diff:1,cat:'SANTE',title:'Dos droit',desc:'Surveille ta posture toutes les heures.'},
+{diff:1,cat:'SANTE',title:'Abdos',desc:'Fais 20 abdominaux aujourd\'hui.'},
+{diff:1,cat:'SANTE',title:'Sans alcool',desc:'Aucune consommation d\'alcool aujourd\'hui.'},
+{diff:1,cat:'SANTE',title:'Lumière naturelle',desc:'Expose-toi à la lumière du jour 15 minutes.'},
+{diff:1,cat:'SANTE',title:'Traction',desc:'Fais 5 tractions si tu peux.'},
+{diff:1,cat:'SANTE',title:'Dîner léger',desc:'Mange léger ce soir, sans excès.'},
+{diff:1,cat:'SANTE',title:'Yoga 5 min',desc:'Fais 5 minutes de yoga ou d\'étirements doux.'},
+{diff:1,cat:'SANTE',title:'Mâcher lentement',desc:'Mange un repas lentement et consciemment.'},
+{diff:1,cat:'SANTE',title:'Sans fast food',desc:'Aucun fast food ni plat industriel aujourd\'hui.'},
+{diff:1,cat:'SANTE',title:'Fenêtre ouverte',desc:'Aère ton logement 10 minutes ce matin.'},
+{diff:1,cat:'SANTE',title:'Bain de pieds',desc:'Prends soin de tes pieds ce soir.'},
+{diff:2,cat:'SANTE',title:'HIIT',desc:'20 minutes d\'entraînement fractionné intense.'},
+{diff:2,cat:'SANTE',title:'Vélo',desc:'Fais 30 minutes de vélo ou vélo elliptique.'},
+{diff:2,cat:'SANTE',title:'Natation',desc:'Nage 30 minutes si tu as accès à une piscine.'},
+{diff:2,cat:'SANTE',title:'Sans sel ajouté',desc:'Aucun sel ajouté dans tes repas aujourd\'hui.'},
+{diff:2,cat:'SANTE',title:'Yoga 20 min',desc:'Pratique 20 minutes de yoga guidé.'},
+{diff:2,cat:'SANTE',title:'Repas préparé',desc:'Prépare tous tes repas maison aujourd\'hui.'},
+{diff:2,cat:'SANTE',title:'10 000 pas',desc:'Atteins 10 000 pas dans la journée.'},
+{diff:2,cat:'SANTE',title:'Salade complète',desc:'Prépare et mange une grande salade équilibrée.'},
+{diff:2,cat:'SANTE',title:'Workout maison',desc:'Entraîne-toi 25 min sans matériel chez toi.'},
+{diff:2,cat:'SANTE',title:'Sieste courte',desc:'Fais une sieste de 20 minutes max.'},
+{diff:2,cat:'SANTE',title:'Smoothie vert',desc:'Prépare un smoothie avec légumes et fruits.'},
+{diff:2,cat:'SANTE',title:'Sans sucre raffiné',desc:'Aucun sucre raffiné dans l\'alimentation du jour.'},
+{diff:2,cat:'SANTE',title:'Gainage long',desc:'Tiens la planche 3 minutes au total.'},
+{diff:2,cat:'SANTE',title:'Protéines',desc:'Mange une source de protéines à chaque repas.'},
+{diff:2,cat:'SANTE',title:'Froid matin',desc:'Commence ta douche à l\'eau froide 2 minutes.'},
+{diff:3,cat:'SANTE',title:'Course longue',desc:'Cours 5 km sans t\'arrêter.'},
+{diff:3,cat:'SANTE',title:'Jeûne intermittent',desc:'Mange sur une fenêtre de 8h maximum.'},
+{diff:3,cat:'SANTE',title:'Entraînement 1h',desc:'1 heure d\'exercice physique intense sans pause.'},
+{diff:3,cat:'SANTE',title:'Vegan 24h',desc:'Mange uniquement végétal pendant 24h.'},
+{diff:3,cat:'SANTE',title:'Cryothérapie',desc:'Reste 3 minutes sous douche froide complète.'},
+{diff:3,cat:'SANTE',title:'100 pompes',desc:'Fais 100 pompes réparties dans la journée.'},
+{diff:3,cat:'SANTE',title:'Alimentation propre',desc:'Aucun aliment transformé pendant 24h entières.'},
+{diff:3,cat:'SANTE',title:'Défi cardio',desc:'45 minutes de cardio continu sans pause.'},
+{diff:3,cat:'SANTE',title:'Circuit complet',desc:'5 exercices enchaînés 5 fois sans repos.'},
+{diff:3,cat:'SANTE',title:'Sommeil 8h',desc:'Couche-toi à l\'heure pour dormir 8h exactement.'},
+{diff:3,cat:'SANTE',title:'Marche 10 km',desc:'Marche 10 km dans la journée.'},
+{diff:3,cat:'SANTE',title:'Détox alimentaire',desc:'Fruits, légumes et eau uniquement pendant 24h.'},
+{diff:3,cat:'SANTE',title:'Yoga 1h',desc:'1 heure de pratique yoga ou stretching complet.'},
+{diff:3,cat:'SANTE',title:'Sans écran le soir',desc:'Aucun écran après 20h jusqu\'au lendemain matin.'},
+{diff:3,cat:'SANTE',title:'Défi force',desc:'Bats ton record personnel sur un exercice.'},
+{diff:1,cat:'EXPERIENCE',title:'Journée thème',desc:'Choisis un thème pour ta journée et respecte-le.'},
+{diff:2,cat:'EXPERIENCE',title:'Lettre gratitude',desc:'Écris une lettre de remerciement à quelquun.'},
+{diff:3,cat:'EXPERIENCE',title:'Immersion culturelle',desc:'Passe 3h à explorer une culture différente de la tienne.'},
+{diff:1,cat:'MAISON',title:'Comptoir propre',desc:'Garde le comptoir de cuisine vide toute la journée.'},
+{diff:2,cat:'MAISON',title:'Tri numérique',desc:'Supprime 100 fichiers inutiles sur ton ordinateur.'},
+{diff:3,cat:'MAISON',title:'Réorganisation totale',desc:'Réorganise entièrement une pièce de fond en comble.'},
+{diff:1,cat:'MENTAL',title:'Mot du jour',desc:'Choisis un mot qui guidera ta journée.'},
+{diff:2,cat:'MENTAL',title:'Podcast éducatif',desc:'Écoute 45 min dun podcast éducatif sérieux.'},
+{diff:3,cat:'MENTAL',title:'Plan décennal',desc:'Écris où tu veux être dans 10 ans avec précision.'},
+{diff:1,cat:'SANTE',title:'Pas de grignotage',desc:'Aucun grignotage entre les repas.'},
+{diff:2,cat:'SANTE',title:'Plein air 1h',desc:'Passe 1h à lexérieur sans téléphone.'},
+{diff:3,cat:'SANTE',title:'Triathlon mini',desc:'Nage, vélo et course enchaînés le même jour.'},
+{diff:1,cat:'EXPERIENCE',title:'Observation ciel',desc:'Observe le ciel pendant 5 minutes conscientes.'},
+{diff:2,cat:'MAISON',title:'Penderie capsule',desc:'Réduis ta garde-robe à lessentiel pour 1 semaine.'},
+{diff:3,cat:'MENTAL',title:'Sans validation',desc:'Prends 3 décisions importantes sans chercher lapprobation.'},
+{diff:1,cat:'SANTE',title:'Sauts',desc:'Fais 50 sauts sur place dans la journée.'},
+{diff:2,cat:'EXPERIENCE',title:'Masterclass',desc:'Regarde une masterclass en ligne sur un sujet nouveau.'},
+{diff:3,cat:'MAISON',title:'Budget mois',desc:'Établis ton budget complet pour le mois à venir.'},
+{diff:2,cat:'MENTAL',title:'Ikigai',desc:'Réfléchis à ton ikigai et note tes conclusions.'},
+{diff:3,cat:'SANTE',title:'Sans technologie',desc:'Fais du sport 1h sans musique ni téléphone.'}
+];
+
+let pts=0,serie=0,doneIds=new Set(),filterCat="ALL",filterDiff=0,disp=[];
+let tOn=false,tSec=0,tRef=null,pSec=25*60,sessSec=0,sessStart=null,sessions=[];
+let prevLv=1,tirageCount=0,tirageDate="",defiDone=false;
+
+
+function validerSerment(){
+  localStorage.setItem("dm_serment","1");
+  document.getElementById("serment").classList.add("hidden");
+  showSplash();
+}
+// AUDIO
+let AC=null;
+function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC;}
+function playDing(){
+  try{
+    const ac=getAC();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type="sine";
+    o.frequency.setValueAtTime(880,ac.currentTime);
+    o.frequency.exponentialRampToValueAtTime(440,ac.currentTime+.3);
+    g.gain.setValueAtTime(.25,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.5);
+    o.start(ac.currentTime);o.stop(ac.currentTime+.5);
+  }catch(e){}
+}
+function vibrate(){try{if(navigator.vibrate)navigator.vibrate(40);}catch(e){}}
+
+function doRipple(el){
+  try{
+    const r=el.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const d=document.createElement("div");
+    d.className="ripple";
+    const size=100;
+    d.style.cssText="width:"+size+"px;height:"+size+"px;left:"+(cx-size/2)+"px;top:"+(cy-size/2)+"px";
+    document.getElementById("ripple-container").appendChild(d);
+    setTimeout(()=>{if(d.parentNode)d.parentNode.removeChild(d);},700);
+    const f=document.createElement("div");
+    f.className="flash";
+    document.body.appendChild(f);
+    setTimeout(()=>{if(f.parentNode)f.parentNode.removeChild(f);},350);
+  }catch(e){}
+}
+
+
+
+// SPLASH
+function showSplash(){
+  const splash=document.getElementById("splash");
+  const idx=new Date().getDay();
+  document.getElementById("splash-quote").textContent=CITATIONS[idx%CITATIONS.length];
+  splash.classList.remove("hidden");
+  setTimeout(function(){document.getElementById("splash-prog").style.width="100%";},100);
+  setTimeout(function(){
+    splash.classList.add("out");
+    setTimeout(function(){splash.classList.add("hidden");launchApp();},500);
+  },3000);
+}
+
+function launchApp(){
+  document.getElementById("main-app").style.display="block";
+  loadState();
+  // Widget date
+  const now=new Date();
+  const days=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  const months=["jan","fév","mar","avr","mai","jun","jul","aoû","sep","oct","nov","déc"];
+  document.getElementById("w-date").textContent=days[now.getDay()]+" "+now.getDate()+" "+months[now.getMonth()];
+  // Défi
+  const weekNum=Math.floor(Date.now()/(7*24*60*60*1000));
+  const defi=MODE_DEFI[weekNum%MODE_DEFI.length];
+  document.getElementById("defi-desc").textContent=defi;
+  if(defiDone){
+    document.getElementById("defi-btn").textContent="Accompli ✓";
+    document.getElementById("defi-btn").className="defi-btn done-btn";
+  }
+  prevLv=getLv(pts).n;
+  upStats();tirage();buildWeek();upT();renderSess();
+}
+
+function loadState(){
+  try{
+    const s=JSON.parse(localStorage.getItem("dm4")||"{}");
+    pts=s.pts||0;serie=s.serie||0;
+    doneIds=new Set(s.done||[]);
+    sessions=s.sess||[];
+    tirageDate=s.tirageDate||"";
+    tirageCount=s.tirageCount||0;
+    defiDone=s.defiDone||false;
+    const today=new Date().toISOString().split("T")[0];
+    if(s.date&&s.date!==today){
+      if(doneIds.size===0){const p=Math.min(50,pts);pts=Math.max(0,pts-p);serie=0;}
+      else serie++;
+      doneIds=new Set();tirageCount=0;defiDone=false;
+    }
+    if(tirageDate!==today){tirageCount=0;tirageDate=today;}
+    save();
+  }catch(e){console.log("State error",e);}
+}
+
+function save(){
+  const today=new Date().toISOString().split("T")[0];
+  try{
+    localStorage.setItem("dm4",JSON.stringify({
+      pts:pts,serie:serie,done:Array.from(doneIds),
+      sess:sessions,date:today,
+      tirageDate:tirageDate,tirageCount:tirageCount,defiDone:defiDone
+    }));
+  }catch(e){}
+}
+
+function getLv(p){for(var i=0;i<LEVELS.length;i++){if(p<LEVELS[i].max)return LEVELS[i];}return LEVELS[6];}
+
+function upStats(){
+  var lv=getLv(pts);
+  var prev=lv.n>1?LEVELS[lv.n-2].max:0;
+  var pct=lv.max===Infinity?100:Math.round(((pts-prev)/(lv.max-prev))*100);
+  document.getElementById("s-pts").textContent=pts;
+  document.getElementById("s-done").textContent=doneIds.size;
+  document.getElementById("s-serie").textContent=serie;
+  document.getElementById("s-min").textContent=Math.floor(sessSec/60);
+  document.getElementById("bar").style.width=Math.min(100,pct)+"%";
+  document.getElementById("prog-lv").textContent="Niveau "+lv.n+" — "+lv.label;
+  document.getElementById("prog-pts").textContent=pts+" / "+(lv.max===Infinity?"∞":lv.max)+" XP";
+  document.getElementById("prog-cur").textContent=pts+" XP";
+  document.getElementById("prog-nxt").textContent=lv.max===Infinity?"Niveau maximum":"Niveau "+(lv.n+1)+" — "+lv.max+" XP";
+  document.getElementById("lvl-text").textContent="Niveau "+lv.n+" — "+lv.label;
+  document.getElementById("serie-n").textContent=serie;
+  // widget
+  document.getElementById("w-done").textContent=doneIds.size;
+  document.getElementById("w-xp").textContent=pts;
+  document.getElementById("w-serie").textContent=serie;
+  document.getElementById("w-bar").style.width=Math.min(100,pct)+"%";
+  if(lv.n>prevLv){showLvUp(lv);}
+  prevLv=lv.n;
+  renderLvs();save();
+}
+
+function showLvUp(lv){
+  document.getElementById("ov-ico").textContent=lv.ico;
+  document.getElementById("ov-title").textContent="Niveau "+lv.n+" — "+lv.label;
+  document.getElementById("ov-sub").textContent=lv.desc;
+  document.getElementById("ov-lvl").classList.add("show");
+  playDing();vibrate();
+}
+
+function renderLvs(){
+  var lv=getLv(pts);
+  var html="";
+  for(var i=0;i<LEVELS.length;i++){
+    var l=LEVELS[i];
+    var cur=l.n===lv.n,done=l.n<lv.n;
+    html+='<div class="lv-row">'
+      +'<div class="lv-ico'+(cur?" cur":"")+'">'+l.ico+'</div>'
+      +'<div style="flex:1">'
+      +'<div class="lv-name">'+l.label+'</div>'
+      +'<div class="lv-range">'+(l.max===Infinity?l.min+" XP+":l.min+" – "+l.max+" XP")+'</div>'
+      +(cur?'<div class="lv-here">Tu es ici — '+pts+' XP</div>':"")
+      +'</div>'
+      +'<div class="lv-st">'+(done?"✓":l.n>lv.n?"—":"")+'</div>'
+      +'</div>';
+  }
+  document.getElementById("lv-grid").innerHTML=html;
+}
+
+function renderMs(list){
+  disp=list;
+  document.getElementById("m-count").textContent=list.length+" mission"+(list.length>1?"s":"");
+  var el=document.getElementById("m-list");
+  if(!list.length){el.innerHTML='<div class="empty">Aucune mission pour ce filtre.</div>';return;}
+  var html="";
+  for(var i=0;i<list.length;i++){
+    var m=list[i];
+    var id=m.cat+"_"+m.title;
+    var ck=doneIds.has(id);
+    var catCls=m.cat==="EXPERIENCE"?"tEX":m.cat==="MAISON"?"tMA":m.cat==="MENTAL"?"tME":"tSA";
+    var catLbl=m.cat==="EXPERIENCE"?"Expérience":m.cat==="MAISON"?"Maison":m.cat==="MENTAL"?"Mental":"Santé";
+    html+='<div class="m-card'+(ck?" done":"")+'">'
+      +'<div class="check'+(ck?" on":"")+'" data-idx="'+i+'" onclick="tog('+i+',this)"></div>'
+      +'<div class="m-body">'
+      +'<div class="m-top-row">'
+      +'<span class="m-title">'+m.title+'</span>'
+      +'<span class="m-tag '+catCls+'">'+catLbl+'</span>'
+      +'<span class="m-tag td'+m.diff+'">'+(m.diff===1?"Facile":m.diff===2?"Moyen":"Difficile")+'</span>'
+      +'</div>'
+      +'<div class="m-desc">'+m.desc+'</div>'
+      +'<div class="m-xp">+'+XP[m.diff]+' XP</div>'
+      +'</div></div>';
+  }
+  el.innerHTML=html;
+}
+
+function tog(i,el){
+  var m=disp[i];
+  var id=m.cat+"_"+m.title;
+  var xp=XP[m.diff];
+  if(doneIds.has(id))return;
+  doneIds.add(id);pts+=xp;
+  playDing();vibrate();doRipple(el);
+  upStats();renderMs(disp);
+}
+
+function filtered(){
+  return ALL.filter(function(m){
+    return(filterCat==="ALL"||m.cat===filterCat)&&(filterDiff===0||m.diff===filterDiff);
+  });
+}
+
+function sf(type,val,btn){
+  if(type==="cat"){
+    filterCat=val;
+    var btns=document.querySelectorAll("#cat-row .f-btn");
+    for(var i=0;i<btns.length;i++)btns[i].classList.remove("on");
+  }else{
+    filterDiff=val;
+    var btns=document.querySelectorAll("#diff-row .f-btn");
+    for(var i=0;i<btns.length;i++)btns[i].classList.remove("on");
+  }
+  btn.classList.add("on");
+  tirage();
+}
+
+function tirage(){
+  var today=new Date().toISOString().split("T")[0];
+  if(tirageDate!==today){tirageCount=0;tirageDate=today;}
+  var max=3;
+  var btn=document.getElementById("tirage-btn");
+  var hint=document.getElementById("tirage-hint");
+  var pool=filtered();
+  if(pool.length){
+    var shuffled=pool.slice().sort(function(){return Math.random()-.5;});
+    renderMs(shuffled.slice(0,3));
+  }else{renderMs([]);}
+  if(tirageCount<max){
+    tirageCount++;
+    var restants=max-tirageCount;
+    if(restants>0){
+      hint.textContent=restants+" tirage"+(restants>1?"s":"")+" restant"+(restants>1?"s":"")+" aujourd'hui";
+      btn.disabled=false;
+    }else{
+      hint.textContent="Plus de tirage disponible aujourd'hui.";
+      btn.disabled=true;
+    }
+  }
+  save();
+}
+
+function validerDefi(){
+  if(defiDone)return;
+  defiDone=true;pts+=500;
+  document.getElementById("defi-btn").textContent="Accompli ✓";
+  document.getElementById("defi-btn").className="defi-btn done-btn";
+  playDing();vibrate();upStats();
+}
+
+function goTab(n,btn){
+  var tabs=document.querySelectorAll(".tab");
+  for(var i=0;i<tabs.length;i++)tabs[i].classList.remove("active");
+  var pages=document.querySelectorAll(".page");
+  for(var i=0;i<pages.length;i++)pages[i].classList.remove("active");
+  btn.classList.add("active");
+  document.getElementById("page-"+n).classList.add("active");
+}
+
+// TIMER — corrigé
+function setP(min,btn){
+  var ps=document.querySelectorAll(".preset");
+  for(var i=0;i<ps.length;i++)ps[i].classList.remove("on");
+  btn.classList.add("on");
+  pSec=min*60;
+  resetT();
+}
+
+function toggleT(){
+  var btn=document.getElementById("t-start");
+  if(!tOn){
+    // Démarrer AudioContext sur interaction utilisateur
+    try{getAC().resume();}catch(e){}
+    tOn=true;
+    btn.textContent="Pause";
+    btn.classList.add("go");
+    sessStart=Date.now();
+    tRef=setInterval(function(){tSec++;sessSec++;upT();},1000);
+  }else{
+    tOn=false;
+    btn.textContent="Reprendre";
+    btn.classList.remove("go");
+    clearInterval(tRef);tRef=null;
+    if(sessStart){
+      var dur=Math.round((Date.now()-sessStart)/1000);
+      var xpE=Math.floor(dur/60)*5;
+      if(xpE>0){
+        var now=new Date();
+        sessions.unshift({l:now.getHours()+"h"+String(now.getMinutes()).padStart(2,"0"),dur:dur,xp:xpE});
+        if(sessions.length>10)sessions=sessions.slice(0,10);
+        pts+=xpE;upStats();renderSess();
+      }
+      sessStart=null;
+    }
+  }
+}
+
+function resetT(){
+  if(tOn){clearInterval(tRef);tRef=null;tOn=false;}
+  tSec=0;
+  var btn=document.getElementById("t-start");
+  btn.textContent="Démarrer";
+  btn.classList.remove("go");
+  upT();
+}
+
+function fmt(s){
+  var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  if(h>0)return pad(h)+":"+pad(m)+":"+pad(sc);
+  return pad(m)+":"+pad(sc);
+}
+function pad(n){return String(n).padStart(2,"0");}
+
+function upT(){
+  document.getElementById("t-display").textContent=fmt(tSec);
+  document.getElementById("t-hint").textContent=pSec>0?"Objectif : "+fmt(pSec):"Chrono libre";
+  var prog=pSec>0?Math.min(1,tSec/pSec):0;
+  document.getElementById("ring").style.strokeDashoffset=415-(415*prog);
+}
+
+function renderSess(){
+  var el=document.getElementById("sess-list");
+  if(!sessions.length){el.innerHTML='<div style="font-size:13px;color:var(--tx2)">Aucune session.</div>';return;}
+  var html="";
+  for(var i=0;i<sessions.length;i++){
+    var s=sessions[i];
+    html+='<div class="sess-row"><span style="color:var(--tx)">'+s.l+'</span><span style="color:var(--tx2);font-size:12px">'+fmt(s.dur)+'</span><span class="sess-xp">+'+s.xp+' XP</span></div>';
+  }
+  el.innerHTML=html;
+}
+
+function buildWeek(){
+  var st=["ok","ok","ok","ok","ok","miss","today"];
+  var html="";
+  for(var i=0;i<DAYS.length;i++){
+    html+='<div class="day '+st[i]+'">'
+      +'<span class="day-sym">'+(st[i]==="ok"?"✓":st[i]==="today"?"◉":"×")+'</span>'
+      +'<span class="day-lbl">'+DAYS[i]+'</span>'
+      +'</div>';
+  }
+  document.getElementById("week").innerHTML=html;
+}
+
+function simPen(){
+  var pen=Math.min(50,pts);
+  document.getElementById("pen-detail").textContent="Série remise à 0 (était "+serie+" jours)\n−"+pen+" XP ("+pts+" → "+(pts-pen)+" XP)\nMission difficile obligatoire demain";
+  document.getElementById("ov-pen").classList.add("show");
+}
+function applyPen(){
+  var pen=Math.min(50,pts);
+  pts=Math.max(0,pts-pen);serie=0;
+  document.getElementById("ov-pen").classList.remove("show");
+  upStats();buildWeek();
+}
+
+// PWA
+var deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",function(e){
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById("install-banner").classList.add("show");
+});
+document.getElementById("install-btn").addEventListener("click",function(){
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(r){
+    if(r.outcome==="accepted")document.getElementById("install-banner").classList.remove("show");
+    deferredPrompt=null;
+  });
+});
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("./sw.js").catch(function(e){console.log("SW:",e);});
+  });
+}
+
+// INIT
+if(localStorage.getItem("dm_serment")){
+  document.getElementById("serment").classList.add("hidden");
+  showSplash();
+}
+</script>
+</body>
+</html>
